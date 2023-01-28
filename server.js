@@ -16,32 +16,24 @@ const db = mysql.createConnection(
     // MySQL username,
     user: 'root',
     // TODO: Add MySQL password here
-    password: '',
-    database: 'movies_db'
+    password: 'kawthaung',
+    database: 'employees_db'
   },
-  console.log(`Connected to the movies_db database.`)
+  console.log(`Connected to the employees_db database.`)
 );
 
-// Create a movie
-app.post('/api/new-movie', ({ body }, res) => {
-  const sql = ``;
-  const params = ;
-  
-  db.query(sql, params, (err, result) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: 'success',
-      data: body
-    });
-  });
-});
-
-// Read all movies
-app.get('/api/movies', (req, res) => {
-  const sql = ``;
+// Read all employees
+app.get('/api/employees', (req, res) => {
+  const sql = `
+  SELECT e.id, e.first_name, e.last_name, title, name, salary, CONCAT(m.first_name,' ',m.last_name) as manager
+  FROM employee as e 
+  LEFT JOIN role as r
+  ON e.role_id = r.id
+  LEFT JOIN department as d 
+  ON r.department_id = d.id
+  LEFT JOIN employee as m 
+  ON m.id = e.manager_id;
+  `;
   
   db.query(sql, (err, rows) => {
     if (err) {
@@ -55,35 +47,16 @@ app.get('/api/movies', (req, res) => {
   });
 });
 
-// Delete a movie
-app.delete('/api/movie/:id', (req, res) => {
-  const sql = `DELETE FROM movies WHERE id = ?`;
-  const params = [req.params.id];
+// Read all departments
+app.get('/api/departments', (req, res) => {
+  const sql = `
+  SELECT id, name FROM department;
+  `;
   
-  db.query(sql, params, (err, result) => {
-    if (err) {
-      res.statusMessage(400).json({ error: res.message });
-    } else if (!result.affectedRows) {
-      res.json({
-      message: 'Movie not found'
-      });
-    } else {
-      res.json({
-        message: 'deleted',
-        changes: result.affectedRows,
-        id: req.params.id
-      });
-    }
-  });
-});
-
-// Read list of all reviews and associated movie name using LEFT JOIN
-app.get('/api/movie-reviews', (req, res) => {
-  const sql = ``;
   db.query(sql, (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
-      return;
+       return;
     }
     res.json({
       message: 'success',
@@ -92,27 +65,97 @@ app.get('/api/movie-reviews', (req, res) => {
   });
 });
 
-// BONUS: Update review name
-app.put('/api/review/:id', (req, res) => {
-  const sql = ``;
-  const params = [req.body.review, req.params.id];
+// Read all roles
+app.get('/api/roles', (req, res) => {
+  const sql = `
+  SELECT role.id, role.title, department.name as department, role.salary
+  FROM role
+  LEFT JOIN department
+  ON role.department_id = department.id;
+  `;
+  
+  db.query(sql, (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+       return;
+    }
+    res.json({
+      message: 'success',
+      data: rows
+    });
+  });
+});
 
+// Create a department
+app.post('/api/new-dept', ({ body }, res) => {
+  const sql = `INSERT INTO department (name)
+    VALUES (?)`;
+  const params = [body.name];
+  
   db.query(sql, params, (err, result) => {
     if (err) {
       res.status(400).json({ error: err.message });
-    } else if (!result.affectedRows) {
-      res.json({
-        message: 'Movie not found'
-      });
-    } else {
-      res.json({
-        message: 'success',
-        data: req.body,
-        changes: result.affectedRows
-      });
+      return;
     }
+    res.json({
+      message: 'success',
+      data: body
+    });
   });
 });
+
+// Create a role
+app.post('/api/new-role', ({ body }, res) => {
+  const sql = `INSERT INTO role (title, salary, department_id)
+    VALUES (?,?,?)`;
+  const params = [body.title, body.salary, body.department_id];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: body
+    });
+  });
+});
+
+// Create an employee
+app.post('/api/new-employee', ({ body }, res) => {
+  const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+  VALUES (?,?,?,?)`;
+  const params = [body.first_name, body.last_name, body.role_id, body.manager_id];
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: body
+    });
+  });
+});
+
+// Update an employee
+app.post('/api/update-employee', ({ body }, res) => {
+  const sql = `
+  UPDATE employee SET role_id = ? WHERE id = ?;
+  `;
+  const params = [body.role_id, body.id];  
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: 'success',
+      data: body
+    });
+  });
+});
+
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
