@@ -1,15 +1,14 @@
 const express = require('express');
-// const require = require('inquirer');
+// import inquirer from 'inquirer';
+const inquirer = require('inquirer');
 // Import and require mysql2
 const mysql = require('mysql2');
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-const {Input} = require('enquirer');
-var actionsToSelect = ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department'];
 // const Employees = require('./lib/employees');
 // const employees = new Employees();
-
+var actionsToSelect = ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department'];
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -27,14 +26,47 @@ const db = mysql.createConnection(
   console.log(`Connected to the employees_db database.`)
 );
 
-const actionsSelect = new Input({
-            type: 'list',
-            name: 'action',
-            choices: actionsToSelect
-})
+function init (){
+  inquirer
+  .prompt([
+      {
+          type: 'list',
+          name: 'action',
+          choices: actionsToSelect,
+      }
+    ])
 
-actionsSelect();
-// employees.init();
+  .then((answers)=>{
+      if(answers === actionsToSelect[0]){
+          db.query(`
+          SELECT e.id, e.first_name, e.last_name, title, name, salary, CONCAT(m.first_name,' ',m.last_name) as manager
+          FROM employee as e 
+          LEFT JOIN role as r
+          ON e.role_id = r.id
+          LEFT JOIN department as d 
+          ON r.department_id = d.id
+          LEFT JOIN employee as m 
+          ON m.id = e.manager_id;`, function (err, results) {
+              const res = Object.keys(results[0]);
+              
+              var title="";
+              for (const key of res){
+               title += key+spacerTitle(8);
+              }
+              console.log(title)
+              results.forEach(i=> {
+                    console.log(i.id, spacerTitle(8),i.first_name, spacerTitle(15-i.first_name.length), i.last_name)
+              });    
+              console.log(results[0.0]);
+            });
+      }
+  })
+  .catch((error)=>{
+    if (error.isTtyError){}
+  })
+  
+}
+init();
 
 // // Read all employees
 // app.get('/api/employees', (req, res) => {
