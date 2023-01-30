@@ -1,3 +1,4 @@
+require('events').EventEmitter.defaultMaxListeners = 0
 const express = require('express');
 const Employees = require('./lib/employees')
 const employees = new Employees();
