@@ -31,3 +31,17 @@ VALUES ("Sam", "Kash", 9, 3)
 
 -- Query to update Employee Role
 UPDATE employee SET role_id = 1 WHERE id = 9;
+
+-- Query to find Manager name
+SELECT CONCAT(first_name,' ',last_name) as name FROM employee WHERE manager_id IS NULL;
+
+-- Query to add new employee
+
+-- Query to view employees by department
+SELECT e.id, CONCAT(e.first_name,' ',e.last_name) as Name, title as Role, name as Department, salary
+FROM employee as e 
+LEFT JOIN role as r
+ON e.role_id = r.id
+LEFT JOIN department as d 
+ON r.department_id = d.id
+WHERE department_id = 1;
