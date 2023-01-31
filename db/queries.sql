@@ -45,3 +45,12 @@ ON e.role_id = r.id
 LEFT JOIN department as d 
 ON r.department_id = d.id
 WHERE department_id = 1;
+
+-- Query to view total budgets by departments
+SELECT d.id, name as Department, SUM(salary)
+FROM employee as e 
+LEFT JOIN role as r
+ON e.role_id = r.id
+LEFT JOIN department as d 
+ON r.department_id = d.id
+GROUP BY d.id;
