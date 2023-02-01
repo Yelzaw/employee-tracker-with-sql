@@ -12,8 +12,8 @@ For the business, HR department require to view and track status of employees su
 ## License
 MIT License
 
-## Completed Works - Link and Screenshot
+## Completed Works - URL Link & Youtube Video Link
 
 - https://gentle-gorge-64727.herokuapp.com/
 
-- <img src="./images/sample-webpage.jpg" width="350" alt="Screenshot of webpage">
+- https://www.youtube.com/watch?v=EXQgRU1HgQY
